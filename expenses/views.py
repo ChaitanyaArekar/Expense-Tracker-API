@@ -2,10 +2,11 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import Category, Expense
 from .serializers import CategorySerializer, ExpenseSerializer
+from .permissions import IsOwner  # Import the custom permission class
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner]  # Use the custom permission class to ensure only owners can access their categories
 
     def get_queryset(self):
         return Category.objects.filter(user=self.request.user)    # Only return categories belonging to the logged-in user
@@ -15,7 +16,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     serializer_class = ExpenseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner]  # Use the custom permission class to ensure only owners can access their expenses
 
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user).select_related("category")    # Only return expenses belonging to the logged-in user
