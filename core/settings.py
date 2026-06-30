@@ -132,6 +132,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",    # Enable filtering for all views by default
+        "rest_framework.filters.SearchFilter",  # Enable searching for all views by default
+        "rest_framework.filters.OrderingFilter",    # Enable ordering for all views by default
+    ],
 }
 
 AUTH_USER_MODEL = 'users.User'
