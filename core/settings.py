@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_filters',
+    'drf_spectacular',
 
     'users',
     'expenses',
@@ -137,6 +138,14 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",  # Enable searching for all views by default
         "rest_framework.filters.OrderingFilter",    # Enable ordering for all views by default
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Expense Tracker API",
+    "DESCRIPTION": "A REST API for tracking expenses with JWT authentication, filtering, search, ordering, pagination, and analytics.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,  # hides the raw schema endpoint from the UI
 }
 
 AUTH_USER_MODEL = 'users.User'
