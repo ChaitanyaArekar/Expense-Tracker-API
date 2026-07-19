@@ -47,5 +47,12 @@ class Expense(models.Model):
         ordering = ["-expense_date", "-created_at"]
         verbose_name_plural = "Expenses"  # sets the plural name of the model to "expenses" instead of the default "expenses" in admin interface
 
+        indexes = [
+            models.Index(
+                fields=["user", "-expense_date"],   # composite index for user and expense_date to optimize queries filtering by user and ordering by expense_date
+                name="user_expense_date_idx"
+            ),
+        ]
+
     def __str__(self):
         return f"{self.user.email} — {self.title} — {self.amount}"
