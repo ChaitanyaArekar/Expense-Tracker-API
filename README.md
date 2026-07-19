@@ -1,8 +1,8 @@
 # Expense Tracker API
 
-A production-oriented REST API for tracking personal expenses built with Django and Django REST Framework. Supports JWT authentication, category and expense management, filtering, search, ordering, pagination, and analytics endpoints.
+A REST API for tracking expenses built with Django and Django REST Framework. Supports JWT authentication, category and expense management, filtering, search, ordering, pagination, analytics endpoints, and PostgreSQL as the database.
 
-The project is designed to reflect real backend development practices — ownership-based access control, clean API design, query optimization, and auto-generated API documentation.
+The project demonstrates backend development concepts including ownership-based access control, relational database design, clean REST API architecture, Django ORM, and auto-generated API documentation.
 
 ---
 
@@ -25,13 +25,13 @@ The project is designed to reflect real backend development practices — owners
 
 ## Tech Stack
 
-- Python 3.x
+- Python
 - Django
 - Django REST Framework
+- PostgreSQL
 - Simple JWT
 - django-filter
 - drf-spectacular
-- SQLite
 
 ---
 
@@ -68,6 +68,7 @@ expense-tracker-api/
 ### Prerequisites
 
 - Python installed on your machine
+- PostgreSQL installed and running
 - `pip` available for installing dependencies
 
 ### Installation
@@ -93,6 +94,12 @@ pip install -r requirements.txt
 ```
 SECRET_KEY=your-secret-key-here
 DEBUG=True
+
+DB_NAME=expense_tracker
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
 ```
 
 5. Apply database migrations.
@@ -353,15 +360,15 @@ The Django admin is available at `/admin/` for managing users, categories, and e
 
 ## Development Notes
 
-- The project uses SQLite by default, making it easy to run locally with no additional setup.
-- `DEBUG` is enabled in the current settings — suitable for development only.
+- The project uses PostgreSQL as the primary relational database.
+- Environment variables are managed using `python-decouple`.
+- `DEBUG` is enabled in the current settings and is intended only for local development.
 - Never commit your `.env` file or `SECRET_KEY` to version control.
 
 ---
 
 ## Future Improvements
 
-- Switch to PostgreSQL for production
 - Add unit and integration tests with `pytest-django`
 - Add Docker support for containerized deployment
 - Deploy to Railway or Render
