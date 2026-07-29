@@ -16,4 +16,5 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "core.wsgi:application", "--bind","0.0.0.0:8000", "--access-logfile","-"]
+#  --access-logfile - enables Gunicorn request/access logs and sends them to Docker stdout, instead of only seeing startup and error logs.
