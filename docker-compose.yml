@@ -19,11 +19,10 @@ services:
     env_file:
       - .env
 
-    ports:
-      - "8000:8000"   # during development allowing expose of container port 8000 to host machine for testing and debugging
+    expose:
+      - "8000"
 
     volumes:
-      - .:/app
       - static_volume:/app/staticfiles
 
     depends_on:
@@ -36,9 +35,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-
-    ports:  
-      - "5432:5432"   # during development allowing expose of container port 5432 to host machine for testing and debugging
 
     volumes:
       - db_data:/var/lib/postgresql
