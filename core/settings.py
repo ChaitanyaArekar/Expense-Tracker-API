@@ -21,12 +21,6 @@ ALLOWED_HOSTS = config(
 ).split(",")
 
 
-CSRF_TRUSTED_ORIGINS = config(
-    "CSRF_TRUSTED_ORIGINS",
-    default=""
-).split(",")
-
-
 # Application definition
 
 INSTALLED_APPS = [

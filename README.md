@@ -1,53 +1,126 @@
 # Expense Tracker API
 
-A REST API for tracking expenses built with Django and Django REST Framework. Supports JWT authentication, category and expense management, filtering, search, ordering, pagination, analytics endpoints, and PostgreSQL as the database.
+A Django REST Framework expense tracker API with JWT authentication, user-owned categories and expenses, filtering, search, ordering, pagination, analytics endpoints, Swagger/ReDoc documentation, and Docker-based deployment with Nginx, Gunicorn, and PostgreSQL.
 
-The project demonstrates backend development concepts including ownership-based access control, relational database design, clean REST API architecture, Django ORM, and auto-generated API documentation.
+![Python](https://img.shields.io/badge/Python-blue?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-092E20?logo=django&logoColor=white)
+![Django REST Framework](https://img.shields.io/badge/Django%20REST%20Framework-ff1709?logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white)
+![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?logo=gunicorn&logoColor=white)
 
----
+## Project Overview
+
+This repository demonstrates a production-style backend built with Django REST Framework, JWT authentication, PostgreSQL, Docker, Docker Compose, Gunicorn, and Nginx. It is structured so each authenticated user can manage only their own categories and expenses.
+
+## Why this project?
+
+This project was built to practice designing a production-style Django REST Framework backend. It focuses on JWT authentication, user-specific ownership rules, PostgreSQL persistence, and containerized deployment with Docker, Gunicorn, and Nginx.
+
+It serves as a compact example of a REST API that can run locally or behind a production-style Docker stack.
 
 ## Features
 
-- User registration and login with JWT access and refresh tokens
-- Custom user model with email-based authentication
-- Create, edit, and delete expense categories (per user, case-insensitive)
-- Full CRUD for expenses with category association
-- Ownership enforcement — users can only access their own data
-- Custom permission class for object-level access control
-- Filtering by category, date range, and amount range
-- Search expenses by title and notes
-- Ordering by amount, date, or creation time
-- Paginated responses with client-controlled page size
-- Analytics endpoints — monthly summary, category-wise spending, top spending categories
-- Auto-generated API documentation with Swagger UI and ReDoc
+- Authentication
+  - Email-based custom user model
+  - JWT authentication with access and refresh tokens
+  - Register and fetch the current authenticated user
+- Category Management
+  - CRUD for categories
+  - Category names normalized before save
+- Expense Management
+  - CRUD for expenses
+  - Expense validation for amount, title, and category ownership
+- Ownership & Permissions
+  - User-specific ownership and object-level access control
+- Filtering
+  - Filtering by category, date, and amount ranges
+- Search
+  - Search across expense title and notes
+- Ordering
+  - Ordering by amount, expense date, and creation time
+- Pagination
+  - Paginated expense listing with client-controlled page size
+- Analytics
+  - Analytics endpoints for monthly and category-based summaries
+- API Documentation
+  - Swagger UI and ReDoc documentation
+- Docker Deployment
+  - Dockerized deployment with Nginx, Gunicorn, and PostgreSQL
 
----
+## Architecture Overview
+
+```text
+Client (Browser/Postman)
+    ↓
+  Nginx (Reverse Proxy)
+    ↓
+  Gunicorn (WSGI Application Server)
+    ↓
+  Django REST Framework
+    ↓
+  PostgreSQL
+```
+
+- Nginx listens on port 80, serves `/static/`, and proxies application requests to the web container.
+- Gunicorn runs inside the `web` container and serves the Django WSGI application.
+- Django REST Framework exposes the API, handles authentication, validation, filtering, and analytics.
+- PostgreSQL stores users, categories, expenses, and related metadata.
 
 ## Tech Stack
 
+### Language
+
 - Python
+
+### Framework
+
 - Django
 - Django REST Framework
-- PostgreSQL
-- Simple JWT
 - django-filter
-- drf-spectacular
 
----
+### Database
+
+- PostgreSQL
+
+### Authentication
+
+- Simple JWT
+
+### API Documentation
+
+- drf-spectacular
+- Swagger UI
+- ReDoc
+
+### Deployment
+
+- Docker
+- Docker Compose
+- Gunicorn
+- Nginx
+
+### Configuration
+
+- python-decouple
 
 ## Project Structure
 
-```
-expense-tracker-api/
-│
-├── core/                  # Django project configuration
-├── users/                 # Custom user model, registration, auth APIs
+```text
+.
+├── core/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+├── users/
 │   ├── models.py
 │   ├── serializers.py
 │   ├── views.py
 │   ├── urls.py
 │   └── admin.py
-├── expenses/              # Categories, expenses, filters, permissions, analytics
+├── expenses/
 │   ├── models.py
 │   ├── serializers.py
 │   ├── views.py
@@ -56,200 +129,299 @@ expense-tracker-api/
 │   ├── permissions.py
 │   ├── pagination.py
 │   └── admin.py
+├── nginx/
+│   └── nginx.conf
+├── docker-compose.yml
+├── Dockerfile
 ├── manage.py
 ├── requirements.txt
-└── .env
+├── README.md
+├── .env                  # create manually
+└── staticfiles/
 ```
 
----
+## Prerequisites
+
+### Required
+
+- Git
+- Docker Desktop
+
+### Optional (Local Development)
+
+- Python 3.12+
+- PostgreSQL
 
 ## Getting Started
 
-### Prerequisites
+### 1. Clone the repository
 
-- Python installed on your machine
-- PostgreSQL installed and running
-- `pip` available for installing dependencies
+```bash
+git clone <repository-url>
+cd Expense-Tracker-API
+```
 
-### Installation
+### 2. Create a `.env` file in the project root
 
-1. Clone the repository.
+The repository ignores `.env`, so create it manually.
 
-2. Create and activate a virtual environment.
+```env
+SECRET_KEY=your-secret-key
+DEBUG=False
+
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+DB_NAME=expense_tracker_db
+DB_USER=postgres
+DB_PASSWORD=your-db-password
+DB_HOST=db
+DB_PORT=5432
+```
+
+Notes:
+
+- `ALLOWED_HOSTS` is a comma-separated list.
+- Docker: `DB_HOST=db`
+- Local Development: `DB_HOST=localhost`
+
+## Option 1 — Run with Docker (Recommended)
+
+This is the primary setup method.
+
+### 1. Build and start the containers
+
+This command builds the images if needed and starts all services in detached mode.
+
+```bash
+docker compose up --build -d
+```
+
+### 2. Apply migrations
+
+```bash
+docker compose exec web python manage.py migrate
+```
+
+### 3. Collect static files
+
+```bash
+docker compose exec web python manage.py collectstatic
+```
+
+This copies static assets into the shared Docker volume so Nginx can serve them directly.
+
+### 4. Create a superuser
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+## Option 2 — Run Locally (Development)
+
+Use this workflow if you want to run Django directly on your machine.
+
+### 1. Optional: create and activate a virtual environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate        # macOS/Linux
-venv\Scripts\activate           # Windows
+venv\Scripts\activate
 ```
 
-3. Install the dependencies.
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Create a `.env` file in the root directory.
+### 3. Configure PostgreSQL locally
 
-```
-SECRET_KEY=your-secret-key-here
-DEBUG=True
+Use a local PostgreSQL instance and set `DB_HOST` to your local database host, such as `localhost`.
 
-DB_NAME=expense_tracker
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
-```
-
-5. Apply database migrations.
+### 4. Apply migrations
 
 ```bash
 python manage.py migrate
 ```
 
-6. Create a superuser to access the Django admin.
+### 5. Create a superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
-7. Start the development server.
+### 6. Start the development server
 
 ```bash
 python manage.py runserver
 ```
 
----
+## Verify the Setup
+
+Use these checks after starting the project:
+
+- `docker compose ps` to confirm the containers are running
+- Django Admin: [http://localhost/admin/](http://localhost/admin/)
+- Swagger UI: [http://localhost/api/docs/](http://localhost/api/docs/)
+- ReDoc: [http://localhost/api/redoc/](http://localhost/api/redoc/)
+
+## Application URLs
+
+The following application URLs are accessible from `http://localhost` during local development:
+
+| URL | Description |
+| --- | --- |
+| `http://localhost/admin/` | Django admin |
+| `http://localhost/api/users/register/` | Register a new user |
+| `http://localhost/api/users/me/` | Current authenticated user |
+| `http://localhost/api/login/` | Obtain JWT tokens |
+| `http://localhost/api/login/refresh/` | Refresh JWT access token |
+| `http://localhost/api/categories/` | Category API |
+| `http://localhost/api/expenses/` | Expense API |
+| `http://localhost/api/expenses/monthly-summary/` | Monthly analytics |
+| `http://localhost/api/expenses/category-summary/` | Category analytics |
+| `http://localhost/api/expenses/top-spending-categories/` | Top spending categories |
+| `http://localhost/api/docs/` | Swagger UI |
+| `http://localhost/api/redoc/` | ReDoc |
+| `http://localhost/api/schema/` | OpenAPI schema |
+
+## Docker Setup
+
+The application is composed of three Docker services:
+
+- `nginx`: reverse proxy and static file server
+- `web`: Django application running under Gunicorn
+- `db`: PostgreSQL database
+
+The `web` container reads environment variables from `.env`, and Nginx serves static assets from the shared `staticfiles` volume after `collectstatic` copies them there.
+
+## Environment Variables
+
+The project reads the following variables through `python-decouple` and Docker Compose:
+
+- `SECRET_KEY`: Django secret key
+- `DEBUG`: boolean debug flag
+- `ALLOWED_HOSTS`: comma-separated list of allowed hostnames
+- `DB_NAME`: PostgreSQL database name
+- `DB_USER`: PostgreSQL username
+- `DB_PASSWORD`: PostgreSQL password
+- `DB_HOST`: database host, typically `db` in Docker
+- `DB_PORT`: database port, typically `5432`
 
 ## Authentication
 
-This API uses JWT (JSON Web Tokens) via Simple JWT.
+Authentication is handled with JWT through Simple JWT.
 
 ### Register
 
-```
+```http
 POST /api/users/register/
 ```
 
+Example body:
+
 ```json
 {
-    "email": "user@example.com",
-    "username": "user",
-    "password": "yourpassword"
+  "email": "user@example.com",
+  "username": "user",
+  "password": "yourpassword"
 }
 ```
 
 ### Login
 
-```
+```http
 POST /api/login/
 ```
 
-```json
-{
-    "email": "user@example.com",
-    "password": "yourpassword"
-}
-```
-
-Response:
+Example body:
 
 ```json
 {
-    "access": "your-access-token",
-    "refresh": "your-refresh-token"
+  "email": "user@example.com",
+  "password": "yourpassword"
 }
 ```
 
-### Refresh Token
+### Refresh access token
 
-```
+```http
 POST /api/login/refresh/
 ```
 
-### Current User
+### Current user
 
-```
+```http
 GET /api/users/me/
-Authorization: Bearer your-access-token
+Authorization: Bearer <access-token>
 ```
 
----
+Protected endpoints require the access token in the `Authorization` header.
 
 ## API Endpoints
 
-All endpoints require `Authorization: Bearer <access-token>` unless stated otherwise.
+All authenticated endpoints require `Authorization: Bearer <access-token>`.
+
+### Authentication and user
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/api/users/register/` | Register a new user |
+| POST | `/api/login/` | Obtain access and refresh tokens |
+| POST | `/api/login/refresh/` | Refresh an access token |
+| GET | `/api/users/me/` | Return the authenticated user |
 
 ### Categories
 
 | Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/categories/` | List all your categories |
-| POST | `/api/categories/` | Create a new category |
-| GET | `/api/categories/<id>/` | Retrieve a category |
-| PUT/PATCH | `/api/categories/<id>/` | Update a category |
-| DELETE | `/api/categories/<id>/` | Delete a category |
+| --- | --- | --- |
+| GET | `/api/categories/` | List the current user’s categories |
+| POST | `/api/categories/` | Create a category |
+| GET | `/api/categories/{id}/` | Retrieve a category |
+| PUT | `/api/categories/{id}/` | Replace a category |
+| PATCH | `/api/categories/{id}/` | Partially update a category |
+| DELETE | `/api/categories/{id}/` | Delete a category |
 
-> Deleting a category will fail if any expenses are linked to it.
+Categories are user-owned and names are normalized before saving. Duplicate category names per user are prevented.
 
 ### Expenses
 
 | Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/expenses/` | List all your expenses |
-| POST | `/api/expenses/` | Create a new expense |
-| GET | `/api/expenses/<id>/` | Retrieve an expense |
-| PUT/PATCH | `/api/expenses/<id>/` | Update an expense |
-| DELETE | `/api/expenses/<id>/` | Delete an expense |
+| --- | --- | --- |
+| GET | `/api/expenses/` | List the current user’s expenses |
+| POST | `/api/expenses/` | Create an expense |
+| GET | `/api/expenses/{id}/` | Retrieve an expense |
+| PUT | `/api/expenses/{id}/` | Replace an expense |
+| PATCH | `/api/expenses/{id}/` | Partially update an expense |
+| DELETE | `/api/expenses/{id}/` | Delete an expense |
 
-### Example Request Body (Create Expense)
-
-```json
-{
-    "title": "Lunch",
-    "amount": "150.00",
-    "expense_date": "2026-06-27",
-    "category": 1,
-    "notes": "Biryani"
-}
-```
-
-### Example Response
+Expense payload example:
 
 ```json
 {
-    "id": 1,
-    "title": "Lunch",
-    "amount": "150.00",
-    "expense_date": "2026-06-27",
-    "notes": "Biryani",
-    "category": 1,
-    "category_detail": {
-        "id": 1,
-        "name": "Food"
-    },
-    "created_at": "2026-06-27T10:00:00Z",
-    "updated_at": "2026-06-27T10:00:00Z"
+  "title": "Lunch",
+  "amount": "150.00",
+  "expense_date": "2026-06-27",
+  "category": 1,
+  "notes": "Biryani"
 }
 ```
 
----
+## Filtering, Search, Ordering
 
-## Filtering, Search, and Ordering
+The expense list endpoint supports the following query parameters:
 
 ### Filtering
 
-```
+```http
 GET /api/expenses/?category=1
-GET /api/expenses/?min_amount=100&max_amount=500
 GET /api/expenses/?expense_date=2026-06-27
+GET /api/expenses/?min_amount=100&max_amount=500
 GET /api/expenses/?expense_date_after=2026-06-01&expense_date_before=2026-06-30
 ```
 
 ### Search
 
-```
+```http
 GET /api/expenses/?search=lunch
 ```
 
@@ -257,119 +429,106 @@ Searches across `title` and `notes`.
 
 ### Ordering
 
-```
-GET /api/expenses/?ordering=amount         # ascending
-GET /api/expenses/?ordering=-amount        # descending
+```http
+GET /api/expenses/?ordering=amount
+GET /api/expenses/?ordering=-amount
 GET /api/expenses/?ordering=expense_date
 GET /api/expenses/?ordering=-created_at
 ```
 
-### Combine Everything
-
-```
-GET /api/expenses/?category=1&search=lunch&ordering=-amount&page=2&page_size=5
-```
-
----
+You can combine these parameters in a single request.
 
 ## Pagination
 
-Responses are paginated. Default page size is 10.
+Expense lists are paginated with page-number pagination.
 
-```
-GET /api/expenses/?page=2
-GET /api/expenses/?page_size=20       # client-controlled, max 100
+- Default page size: `10`
+- Maximum page size: `100`
+- Query parameters: `page`, `page_size`
+
+Example:
+
+```http
+GET /api/expenses/?page=2&page_size=20
 ```
 
-Response shape:
+Typical response shape:
 
 ```json
 {
-    "count": 47,
-    "next": "http://localhost:8000/api/expenses/?page=2",
-    "previous": null,
-    "results": [...]
+  "count": 47,
+  "next": "http://localhost/api/expenses/?page=3",
+  "previous": "http://localhost/api/expenses/?page=1",
+  "results": []
 }
 ```
 
----
-
 ## Analytics Endpoints
 
-### Monthly Summary
+### Monthly summary
 
-```
+```http
 GET /api/expenses/monthly-summary/
 ```
 
-Returns total amount and expense count grouped by month.
+Groups expenses by month and returns total amount plus count.
 
-```json
-[
-    {"month": "2026-06-01", "total": "4500.00", "count": 12},
-    {"month": "2026-05-01", "total": "3200.00", "count": 9}
-]
-```
+### Category summary
 
-### Category Summary
-
-```
+```http
 GET /api/expenses/category-summary/
 ```
 
-Returns total, count, and average spending per category.
+Returns totals, counts, and averages per category.
 
-```json
-[
-    {"category__id": 1, "category__name": "Food", "total": "1200.00", "count": 8, "average": "150.00"},
-    {"category__id": 2, "category__name": "Travel", "total": "800.00", "count": 3, "average": "266.67"}
-]
-```
+### Top spending categories
 
-### Top Spending Categories
-
-```
+```http
 GET /api/expenses/top-spending-categories/
 GET /api/expenses/top-spending-categories/?limit=3
 ```
 
-Returns top N categories by total spending. Defaults to 5.
-
----
+Returns the highest-spending categories for the authenticated user. The default limit is `5`.
 
 ## API Documentation
 
-Start the server and visit:
+The API schema and interactive docs are automatically generated with drf-spectacular.
 
-- **Swagger UI** — `http://localhost:8000/api/docs/`
-- **ReDoc** — `http://localhost:8000/api/redoc/`
+The API schema and interactive docs are available at:
 
-To export the schema as a file:
+- Swagger UI: `/api/docs/`
+- ReDoc: `/api/redoc/`
+- OpenAPI schema: `/api/schema/`
 
-```bash
-python manage.py spectacular --color --file schema.yml
-```
-
----
-
-## Admin
+## Django Admin
 
 The Django admin is available at `/admin/` for managing users, categories, and expenses.
 
----
+## Useful Docker Commands
 
-## Development Notes
+```bash
+docker compose up -d
+docker compose up --build -d
+docker compose logs -f
+docker compose stop
+docker compose down
+docker compose restart
+docker compose ps
+```
 
-- The project uses PostgreSQL as the primary relational database.
-- Environment variables are managed using `python-decouple`.
-- `DEBUG` is enabled in the current settings and is intended only for local development.
-- Never commit your `.env` file or `SECRET_KEY` to version control.
+## Production Architecture
 
----
+In production, requests flow through Nginx first. Nginx terminates external HTTP traffic, serves static files from the shared volume, and forwards application requests to Gunicorn. Gunicorn runs the Django application code, which handles authentication, validation, filtering, and analytics before reading or writing data in PostgreSQL.
+
+- Nginx: reverse proxy
+- Gunicorn: WSGI application server for Django
+- Django: API, authentication, validation, filtering, and analytics
+- PostgreSQL: persistent storage for users, categories, and expenses
 
 ## Future Improvements
 
-- Add unit and integration tests with `pytest-django`
-- Add Docker support for containerized deployment
-- Deploy to Railway or Render
-- Add note tags or recurring expense support
+- Add automated tests for serializers, permissions, filters, and analytics endpoints
+- Add CI checks for linting, migrations, and test execution
+- Add Docker health checks and restart policies
+- Add HTTPS termination and production hardening for Nginx
+- Add export/reporting features for expense data
